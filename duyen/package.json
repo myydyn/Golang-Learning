@@ -1,0 +1,26 @@
+{
+  "name": "typescript-learning",
+  "version": "1.0.0",
+  "description": "",
+  "homepage": "https://github.com/myydyn/Typescript-Learning#readme",
+  "bugs": {
+    "url": "https://github.com/myydyn/Typescript-Learning/issues"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/myydyn/Typescript-Learning.git"
+  },
+  "license": "ISC",
+  "author": "",
+  "type": "commonjs",
+  "main": "index.ts",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "demo": "tsx index.ts"
+  },
+  "devDependencies": {
+    "ts-node": "^10.9.2",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3"
+  }
+}
