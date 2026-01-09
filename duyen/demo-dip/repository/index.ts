@@ -1,23 +1,20 @@
-import type { INotifier, IMsgStorage } from "../interfaces";
-
+import type { INotifier, IMsgStorage } from "../interfaces/index.js";
 
 export class SMSNotification implements INotifier {
-    send(msg: string): void {
-        console.log('send sms: ', msg);
-    }   
+  send(msg: string): void {
+    console.log("send sms: ", msg);
+  }
 }
 
-
 export class EmailNotification implements INotifier {
-    send(msg: string): void {
-        console.log('send email: ', msg);
-    }   
-}   
+  send(msg: string): void {
+    console.log("send email: ", msg);
+  }
+}
 
-
-export class MySQLMsgStorage implements IMsgStorage{
-    save(msg: string): string {
-        console.log('save to mysql: ', msg);
-        return 'ok';
-    }
+export class MySQLMsgStorage implements IMsgStorage {
+  save(msg: string): string {
+    console.log("save to mysql: ", msg);
+    return "ok";
+  }
 }
