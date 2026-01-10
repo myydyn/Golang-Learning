@@ -4,6 +4,8 @@ import type { Request, Response } from "express";
 const app = express();
 const port = 3000;
 
+app.use(express.json());
+
 app.get("/", (req: Request, res: Response) => {
   res.send("Hello, Express!");
 });
@@ -16,25 +18,178 @@ app.post("/", (req: Request, res: Response) => {
 //        POST, GET, PUT/PATCH, DELETE, GET
 
 app.post("/v1/categories", (req: Request, res: Response) => {
-  res.send("Create category");
+  const { name, image, description, parentId } = req.body as CategoryCreateDTO;
+
+  if (name === "") {
+    res.status(400).json({
+      message: "Name is required",
+    });
+
+    return;
+  }
+
+  const newId = crypto.randomUUID();
+  const category: Category = {
+    id: newId,
+    name: name,
+    image: image,
+    description: description,
+    position: 0,
+    parentId: parentId || null,
+    status: CategoryStatus.Active,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  };
+
+  categories.push(category);
+
+  res.status(200).json({
+    data: newId,
+  });
 });
 
 app.get("/v1/categories/", (req: Request, res: Response) => {
-  res.send("List category");
+  res.status(200).json({
+    data: categories,
+  });
 });
 
 app.get("/v1/categories/:id", (req: Request, res: Response) => {
-  res.send("Get category by id");
+  const category = categories.find((c) => c.id === req.params.id);
+
+  if (!category) {
+    res.status(404).json({
+      message: "Category not found",
+    });
+
+    return;
+  }
+
+  res.status(200).json({
+    data: category,
+  });
 });
 
 app.patch("/v1/categories/:id", (req: Request, res: Response) => {
-  res.send("Update category by id");
+  const { id } = req.params;
+  const { name, image, description, parentId, status } =
+    req.body as CategoryUpdateDTO;
+
+  const category = categories.find((c) => c.id === id);
+
+  if (!category) {
+    res.status(404).json({
+      message: "Category not found",
+    });
+
+    return;
+  }
+
+  if (name && name !== "") {
+    category.name = name;
+  }
+
+  if (image) {
+    category.image = image;
+  }
+
+  if (description) {
+    category.description = description;
+  }
+
+  if (parentId) {
+    category.parentId = parentId;
+  }
+
+  if (status) {
+    category.status = status;
+  }
+
+  category.updatedAt = new Date();
+
+  res.status(200).json({
+    data: true,
+  });
 });
 
 app.delete("/v1/categories/:id", (req: Request, res: Response) => {
-  res.send("Delete category by id");
+  const { id } = req.params;
+
+  const category = categories.find((c) => c.id === id);
+
+  if (!category) {
+    res.status(404).json({
+      message: "Category not found",
+    });
+
+    return;
+  }
+  categories = categories.filter((c) => c.id !== id);
+
+  res.status(200).json({
+    data: true,
+  });
 });
 
 app.listen(port, () => {
   console.log(`Server is running on http://localhost:${port}`);
 });
+
+enum CategoryStatus {
+  Active = "active",
+  Inactive = "inactive",
+  Deleted = "deleted",
+}
+
+type CategoryCreateDTO = {
+  name: string;
+  image?: string;
+  description?: string;
+  parentId?: string;
+};
+
+type CategoryUpdateDTO = {
+  name?: string;
+  image?: string;
+  description?: string;
+  parentId?: string;
+  status?: CategoryStatus;
+};
+
+// business model
+type Category = {
+  id: string;
+  name: string;
+  image?: string | undefined;
+  description?: string | undefined;
+  position: number;
+  parentId: string | null;
+  status: CategoryStatus;
+  createdAt: Date;
+  updatedAt: Date;
+};
+
+let categories: Category[] = [
+  {
+    id: "3e1b1c8e-4f5e-4c3b-8b1e-1c8e4f5e4c3b",
+    name: "Category 1",
+    image: "image1.jpg",
+    description: "Description 1",
+    position: 0,
+    parentId: null,
+    status: CategoryStatus.Active,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+  {
+    id: "3e1b1c8e-4f5e-4c3b-8b1e-1c8e4f5e4c4b",
+    name: "Category 2",
+    image: "image2.jpg",
+    description: "Description 2",
+    position: 1,
+    parentId: null,
+    status: CategoryStatus.Active,
+    createdAt: new Date(),
+    updatedAt: new Date(),
+  },
+];
