@@ -3,7 +3,7 @@ import type { Request, Response } from "express";
 import {config} from "dotenv";
 import { z } from 'zod';
 import { v7 } from 'uuid';
-import { setupCategoryModule } from "./modules/category";
+import { setupCategoryHexagon } from "./modules/category";
 import { sequelize } from "./share/component/sequelize";
 
 config();
@@ -25,7 +25,7 @@ config();
         res.send("Hello with POST");
     });
 
-    app.use('/v1', setupCategoryModule(sequelize));
+    app.use('/v1', setupCategoryHexagon(sequelize));
 
     app.listen(port, () => {
         console.log(`Server is running on http://localhost:${port}`);
