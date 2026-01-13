@@ -16,5 +16,5 @@ export const sequelize = new Sequelize({
     acquire: 30000,
     idle: 60000,
   },
-  logging: false,
+  logging: true,
 });
