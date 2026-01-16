@@ -1,15 +1,13 @@
-import { PagingDTO } from "../../../../share/model/paging";
-import { IRepository } from "../../interface";
-import { CategoryUpdateDTO, CategoryCondiDTO } from "../../model/dto";
-import { Category } from "../../model/model";
+import { IRepository } from "../interface";
 import { Sequelize } from "sequelize";
-import { ModelStatus } from "../../../../share/model/base-model";
+import { PagingDTO } from "../model/paging";
+import { ModelStatus } from "../model/base-model";
 import { Op } from "sequelize";
 
-export class MySQLCategoryRepository implements IRepository {
+export abstract class BaseRepositorySequelize <Entity, Condition, UpdateDTO> implements IRepository<Entity, Condition, UpdateDTO> {
     constructor(private readonly sequelize: Sequelize, private readonly modelName: string) {}
     
-    async get(id: string): Promise<Category | null> {
+    async get(id: string): Promise<Entity | null> {
         const data = await this.sequelize.models[this.modelName].findByPk(id);
         if (!data) {
             return null;
@@ -18,13 +16,22 @@ export class MySQLCategoryRepository implements IRepository {
         const persistenceData = data.get({plain: true});
         return {
             ...persistenceData,
-            children: [],
             createdAt: persistenceData.created_at,
             updatedAt: persistenceData.updated_at,
-        } as Category;
+        } as Entity;
     }
     
-    async list(cond: CategoryCondiDTO, paging: PagingDTO): Promise<Category[]> {
+    async findByCondition(cond: Condition): Promise<Entity | null> {
+        const data = await this.sequelize.models[this.modelName].findOne({where: cond as any});
+        if (!data) {
+            return null;
+        }
+        
+        const persistenceData = data.get({plain: true});
+        return persistenceData as Entity;
+    }
+
+    async list(cond: Condition, paging: PagingDTO): Promise<Entity[]> {
         const {page, limit} = paging;
         const condSQL = {...cond, status: {[Op.ne]: ModelStatus.DELETED}};
 
@@ -32,16 +39,16 @@ export class MySQLCategoryRepository implements IRepository {
         paging.total = total;
 
         const rows = await this.sequelize.models[this.modelName].findAll({where: condSQL, limit, offset: (page - 1) * limit});
-        return rows.map(row => row.get({plain: true}) as Category);
+        return rows.map(row => row.get({plain: true}) as Entity);
     }
 
-    async insert(data: Category): Promise<boolean> {
-        await this.sequelize.models[this.modelName].create(data);
+    async insert(data: Entity): Promise<boolean> {
+        await this.sequelize.models[this.modelName].create(data as any);
         return true;
     }
 
-    async update(id: string, data: CategoryUpdateDTO): Promise<boolean> {
-        await this.sequelize.models[this.modelName].update(data, {where: {id}});
+    async update(id: string, data: UpdateDTO): Promise<boolean> {
+        await this.sequelize.models[this.modelName].update(data as any, {where: {id}});
         return true;
     }
 

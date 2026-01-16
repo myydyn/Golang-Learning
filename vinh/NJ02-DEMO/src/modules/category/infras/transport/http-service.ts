@@ -1,7 +1,8 @@
 import { Request, Response } from "express";
 import { CategoryCondiDTOSchema, CategoryCreateSchema, CategoryUpdateSchema } from "../../model/dto";
 import { ICategoryUseCase } from "../../interface";
-import { PagingDTOSchema } from "../../../../share/model/paging";
+import { Category } from "../../model/model";
+
 
 export class CategoryHttpService {
     constructor(private readonly useCase: ICategoryUseCase) {}
@@ -49,21 +50,53 @@ export class CategoryHttpService {
     }
 
     async listCategoryAPI(req: Request, res: Response) {
-        const {success, data: paging, error} = PagingDTOSchema.safeParse(req.query);
+        // const {success, data: paging, error} = PagingDTOSchema.safeParse(req.query);
 
-        if (!success) {
-            res.status(400).json({
-                message: error.message,
-            });
-            return;
-        }
+        // if (!success) {
+        //     res.status(400).json({
+        //         message: error.message,
+        //     });
+        //     return;
+        // }
+
+        const paging = {
+            page: 1,
+            limit: 200,
+        };
+
 
         const cond = CategoryCondiDTOSchema.parse(req.query);
 
         const result = await this.useCase.listCategories(cond, paging);
-        res.status(200).json({data: result, paging, filter: cond});   
+
+        const categoriesTree = result ? this.buildTree(result) : [];
+
+        res.status(200).json({data: categoriesTree, paging, filter: cond});   
     }
 
+    private buildTree(categories: Category[]): Category[] {
+        const categoriesTree: Category[] = []; 
+        const mapChildren = new Map<string, Category[]>();
+
+        for (let i = 0; i < categories.length; i++) {
+            const category = categories[i];
+            
+            if (!mapChildren.get(category.id)) {
+                mapChildren.set(category.id, []);
+            }
+
+            category.children = mapChildren.get(category.id);
+
+            if (!category.parentId) {
+                categoriesTree.push(category);
+            } else {
+                const children = mapChildren.get(category.parentId);
+                children ? children.push(category) : mapChildren.set(category.parentId, [category]);
+            }
+        }
+
+        return categoriesTree;
+    }
 }
 
 

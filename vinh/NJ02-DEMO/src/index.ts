@@ -1,9 +1,8 @@
 import express from "express";
 import type { Request, Response } from "express";
 import {config} from "dotenv";
-import { z } from 'zod';
-import { v7 } from 'uuid';
 import { setupCategoryHexagon } from "./modules/category";
+import { setupBrandHexagon } from "./modules/brand";
 import { sequelize } from "./share/component/sequelize";
 
 config();
@@ -26,6 +25,7 @@ config();
     });
 
     app.use('/v1', setupCategoryHexagon(sequelize));
+    app.use('/v1', setupBrandHexagon(sequelize));
 
     app.listen(port, () => {
         console.log(`Server is running on http://localhost:${port}`);
