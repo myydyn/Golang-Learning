@@ -11,7 +11,7 @@ export interface ICategoryUseCase {
   getDetailCategory(id: string): Promise<Category | null>;
   listCategories(
     cond: CategoryCondDTO,
-    paging: PagingDTO
+    paging: PagingDTO,
   ): Promise<Array<Category>>;
   updateCategory(id: string, data: CategoryUpdateDTO): Promise<boolean>;
   deleteCategory(id: string): Promise<boolean>;
