@@ -1,0 +1,11 @@
+export const ErrNameMustBeAtLeast2Characters = 'Brand name must be at least 2 characters long'
+export const ErrPriceMustBePositive = 'Price must be positive'
+export const ErrSalePriceMustBeNonnegative = 'Sale price must be no negative'
+export const ErrQuantityMustBeNonnegative = 'Quantity must be no negative'
+export const ErrBrandIdMustBeValidUUID = 'Brand ID must be a valid UUID'
+export const ErrCategoryIdMustBeValidUUID = 'Category ID must be a valid UUID'
+
+export const ErrFromPriceMustBePositive = 'From price must be positive'
+export const ErrToPriceMustBePositive = 'To price must be positive'
+export const ErrBrandNotFound = 'Brand not found'
+export const ErrCategoryNotFound = 'Category not found'
