@@ -1,5 +1,6 @@
 export enum ModelStatus {
-  ACTIVE = "active",
-  INACTIVE = "inactive",
-  DELETED = "deleted",
+  ACTIVE = 'active',
+  INACTIVE = 'inactive',
+  DELETED = 'deleted',
 }
+

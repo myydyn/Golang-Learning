@@ -1,5 +1,6 @@
 import { config } from "dotenv";
 import express, { type Request, type Response } from "express";
+import { setupBrandHexagon } from "./modules/brand/index.js";
 import { setupCategoryHexagon } from "./modules/category/index.js";
 import { sequelize } from "./share/component/sequelize.js";
 
@@ -19,6 +20,7 @@ config();
   });
 
   app.use("/v1", setupCategoryHexagon(sequelize));
+  app.use("/v1", setupBrandHexagon(sequelize));
 
   app.listen(port, () => {
     console.log(`Server is running on http://localhost:${port}`);

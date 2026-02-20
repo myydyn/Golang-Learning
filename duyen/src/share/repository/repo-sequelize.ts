@@ -1,29 +1,33 @@
 import { Op, Sequelize } from "sequelize";
-import { ModelStatus } from "../../../../share/model/base-model.js";
-import type { PagingDTO } from "../../../../share/model/paging.js";
-import type { IRepository } from "../../interface/index.js";
-import type { CategoryCondDTO, CategoryUpdateDTO } from "../../model/dto.js";
-import type { Category } from "../../model/model.js";
+import type { IRepository } from "../interface/index.js";
+import { ModelStatus } from "../model/base-model.js";
+import type { PagingDTO } from "../model/paging.js";
 
-// implement ORM here (Sequelize)
-
-export class MySQLCategoryRepository implements IRepository {
+export abstract class BaseRepositorySequelize<
+  Entity,
+  Cond,
+  UpdateDTO,
+> implements IRepository<Entity, Cond, UpdateDTO> {
   constructor(
     private readonly sequelize: Sequelize,
     private readonly modelName: string,
   ) {}
 
+  /**
+   * Safely get the Sequelize model by name
+   * @throws Error if the model is not registered
+   */
   private getModel() {
     const model = this.sequelize.models[this.modelName];
     if (!model) {
       throw new Error(
-        `Model "${this.modelName}" chưa được đăng ký trong Sequelize`,
+        `Model "${this.modelName}" is not registered in Sequelize`,
       );
     }
     return model;
   }
 
-  async get(id: string): Promise<Category | null> {
+  async get(id: string): Promise<Entity | null> {
     const data = await this.getModel().findByPk(id);
 
     if (!data) {
@@ -31,19 +35,29 @@ export class MySQLCategoryRepository implements IRepository {
     }
 
     const persistenceData = data.get({ plain: true });
+    const { created_at, updated_at, ...props } = persistenceData;
 
     return {
-      ...persistenceData,
-      children: [],
+      ...props,
       createdAt: persistenceData.created_at,
       updatedAt: persistenceData.updated_at,
-    } as Category;
+    } as Entity;
   }
 
-  async list(
-    cond: CategoryCondDTO,
-    paging: PagingDTO,
-  ): Promise<Array<Category>> {
+  async findByCond(cond: Cond): Promise<Entity | null> {
+    const data = await this.getModel().findOne({
+      where: cond as any,
+    });
+
+    if (!data) {
+      return null;
+    }
+
+    const persistenceData = data.get({ plain: true });
+    return persistenceData as Entity;
+  }
+
+  async list(cond: Cond, paging: PagingDTO): Promise<Array<Entity>> {
     const { page, limit } = paging;
 
     const condSQL = { ...cond, status: { [Op.ne]: ModelStatus.DELETED } };
@@ -63,13 +77,15 @@ export class MySQLCategoryRepository implements IRepository {
     return rows.map((row) => row.get({ plain: true }));
   }
 
-  async insert(data: Category): Promise<boolean> {
-    await this.getModel().create(data);
+  async insert(data: Entity): Promise<boolean> {
+    await this.getModel().create(data as any);
     return true;
   }
 
-  async update(id: string, data: CategoryUpdateDTO): Promise<boolean> {
-    await this.getModel().update(data, { where: { id } });
+  async update(id: string, data: UpdateDTO): Promise<boolean> {
+    await this.getModel().update(data as any, {
+      where: { id },
+    });
     return true;
   }
 
